@@ -6,43 +6,12 @@ typedef int16_t int16;
 typedef int32_t int32;
 typedef int64_t int64;
 
-#define MAX_INT16 0x7fff
-#define MAX_INT32 0x7fffffff
-#define MAX_INT64 0x7fffffffffffffff
-
-#define MIN_INT16 0x8000
-#define MIN_INT32 0x80000000
-#define MIN_INT64 0x8000000000000000
-
 typedef uint16_t uint16;
 typedef uint32_t uint32;
 typedef uint64_t uint64;
 
-#define MAX_UINT16 0xffff
-#define MAX_UINT32 0xffffffff
-#define MAX_UINT64 0xffffffffffffffff
-
 typedef float float32;
 typedef double float64;
-
-inline float32 INF32() {
-    union {uint32 u; float32 f;} data;
-    data.u = 0x7f800000;
-    return data.f;
-}
-
-inline float32 M_INF32() {
-    union {uint32 u; float32 f;} data;
-    data.u = 0xff800000;
-    return data.f;
-}
-
-inline float32 LoadExp(int32 exp) {
-    uint32 exp_part = (uint32)(exp+127);
-    union {uint32 u; float32 f;} data;
-    data.u = exp_part << 23;
-    return data.f;
-}
 
 #define MIN(x,y) (x)<(y)?(x):(y)
 #define MAX(x,y) (x)<(y)?(y):(x)
@@ -59,8 +28,7 @@ static float64 tab[] =
     1.0e60,1.0e61,1.0e62,1.0e63,1.0e64,1.0e65,1.0e66,1.0e67,1.0e68,1.0e69,
 };
 
-float64 pow10(int32 n)
-{
+float64 pow10(int32 n) {
     int32 m;
 
     if (n < 0) {

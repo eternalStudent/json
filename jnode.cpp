@@ -2,15 +2,15 @@
 
 #include "numbers.cpp"
 #include "string.cpp"
-
-#define Fail(text)		(Log(text), 0)
+#include "encodings.cpp"
 #include "lexer.cpp"
 #include "parser.cpp"
 
-JNode* Parse(void* buffer) {
+JNode* Parse(void* buffer, int64 cap) {
 	Lexer lexer;
-	lexer.data = (char*)buffer;
-	return Parse(&lexer, {});
+	lexer.pos = (byte*)buffer;
+	lexer.cap = cap;
+	return __parse(&lexer, {});
 }
 
 int64 GetInteger(JNode* node) {
@@ -23,14 +23,14 @@ float64 GetFloatingPoint(JNode* node) {
 	return AnsiToFloat64(str);
 }
 
-static char escaped[] = {'"', '\\', '/', '\b', '\f', '\n', '\r', '\t'};
+static byte escaped[] = {'"', '\\', '/', '\b', '\f', '\n', '\r', '\t'};
 
 StringList __unescape(String str) {
   StringList list = {};
   StringNode* node = CreateStringNode();
   node->string.data = str.data;
   for (int32 i = 0; i < str.length; i++) {
-      char c = str.data[i];
+      byte c = str.data[i];
       if (c == '\\') {
         Concat(&list, node);
         node = CreateStringNode();

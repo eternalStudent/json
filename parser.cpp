@@ -23,9 +23,11 @@ void AddChild(JNode* parent, JNode* child) {
 	parent->count++;
 }
 
-JNode* Parse(Lexer* lexer, String key);
+#define Fail(text)		(Log(text), 0)
 
-JNode* ParseObject(Lexer* lexer, Token token, String key) {
+JNode* __parse(Lexer* lexer, String key);
+
+JNode* __parseObject(Lexer* lexer, Token token, String key) {
 	JNode* object = CreateNewNode();
 	object->key = key;
 	object->token = token;
@@ -36,7 +38,7 @@ JNode* ParseObject(Lexer* lexer, Token token, String key) {
 		Token colonToken = GetToken(lexer);
 		if (colonToken.type != tok_colon) return Fail("expected colon");
 
-		JNode* child = Parse(lexer, keyToken.str);
+		JNode* child = __parse(lexer, keyToken.str);
 		if (!child) return NULL;
 		AddChild(object, child);
 
@@ -48,13 +50,13 @@ JNode* ParseObject(Lexer* lexer, Token token, String key) {
 	return object;
 }
 
-JNode* ParseArray(Lexer* lexer, Token token, String key) {
+JNode* __parseArray(Lexer* lexer, Token token, String key) {
 	JNode* array = CreateNewNode();
 	array->key = key;
 	array->token = token;
 
 	while (true) {
-		JNode* child = Parse(lexer, {});
+		JNode* child = __parse(lexer, {});
 		if (!child) return NULL;
 		AddChild(array, child);
 
@@ -66,11 +68,11 @@ JNode* ParseArray(Lexer* lexer, Token token, String key) {
 	return array;
 }
 
-JNode* Parse(Lexer* lexer, String key) {
+JNode* __parse(Lexer* lexer, String key) {
 	Token token = GetToken(lexer);
 	switch (token.type) {
-		case tok_lcb: {return ParseObject(lexer, token, key);}
-		case tok_lsb: {return ParseArray(lexer, token, key);}
+		case tok_lcb: {return __parseObject(lexer, token, key);}
+		case tok_lsb: {return __parseArray(lexer, token, key);}
 		case tok_string: 
 		case tok_number:
 		case tok_bool:
@@ -81,5 +83,5 @@ JNode* Parse(Lexer* lexer, String key) {
 			return node;
 		}
 	}
-	return NULL;
+	return Fail("expected value token");
 }

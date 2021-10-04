@@ -1,9 +1,9 @@
 struct String {
-  char* data;
+  byte* data;
   int64 length;
 };
 
-#define STR(x) String{(x), (sizeof(x)-1)}
+#define STR(x) String{((byte*)x), (sizeof(x)-1)}
 
 bool StringEquals(String string, const char* c_str) {
   if (c_str[string.length]) return false;
