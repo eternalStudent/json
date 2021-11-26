@@ -82,6 +82,7 @@ Token GetToken(Lexer* lexer) {
         return token;
     }
     if (c == 0) {
+        token.str = STR("eof");
         token.type = tok_eof;
         return token;
     }
