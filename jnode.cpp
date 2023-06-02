@@ -1,7 +1,3 @@
-#include <memory.h>
-
-#include "numbers.cpp"
-#include "string.cpp"
 #include "encodings.cpp"
 #include "lexer.cpp"
 #include "parser.cpp"
@@ -15,15 +11,23 @@ JNode* Parse(void* buffer, int64 cap) {
 
 int64 GetInteger(JNode* node) {
 	String str = node->token.str;
-	return AnsiToInt64(str);
+	return ParseInt64(str);
 }
 
 float64 GetFloatingPoint(JNode* node) {
 	String str = node->token.str;
-	return AnsiToFloat64(str);
+	return ParseFloat64(str);
 }
 
 static byte escaped[] = {'"', '\\', '/', '\b', '\f', '\n', '\r', '\t'};
+static StringNode StringNodes[512] = {};
+static int SCount = 0;
+
+StringNode* CreateStringNode() {
+  StringNode* result = &StringNodes[SCount];
+  SCount++;
+  return result;
+}
 
 StringList __unescape(String str) {
   StringList list = {};
@@ -32,7 +36,7 @@ StringList __unescape(String str) {
   for (int32 i = 0; i < str.length; i++) {
       byte c = str.data[i];
       if (c == '\\') {
-        Concat(&list, node);
+        StringListAppend(&list, node);
         node = CreateStringNode();
         node->string.length = 1;
         c = str.data[++i];
@@ -46,7 +50,7 @@ StringList __unescape(String str) {
           case 'r': node->string.data = &escaped[6]; break;
           case 't': node->string.data = &escaped[7]; break;
         }
-        Concat(&list, node);
+        StringListAppend(&list, node);
         node = CreateStringNode();
         node->string.data = &str.data[i+1];
       }
@@ -54,7 +58,7 @@ StringList __unescape(String str) {
         node->string.length++;
       }
   }
-  Concat(&list, node);
+  StringListAppend(&list, node);
   return list;
 }
 
@@ -85,7 +89,7 @@ const char* GetTypeName(JNode* node){
 	return NULL;
 }
 
-JNode* GetChildByKey(JNode* node, const char* key) {
+JNode* GetChildByKey(JNode* node, String key) {
 	JNode* child = node->first;
 	while (child) {
 		if (StringEquals(child->key, key)) return child;

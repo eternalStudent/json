@@ -23,8 +23,6 @@ void AddChild(JNode* parent, JNode* child) {
 	parent->count++;
 }
 
-#define Fail(text)		(Log(text), 0)
-
 JNode* __parse(Lexer* lexer, String key);
 
 JNode* __parseObject(Lexer* lexer, Token token, String key) {
@@ -34,9 +32,9 @@ JNode* __parseObject(Lexer* lexer, Token token, String key) {
 
 	while (true) {
 		Token keyToken = GetToken(lexer);
-		if (keyToken.type != tok_string) return Fail("expected key string");
+		if (keyToken.type != tok_string) return FAIL("expected key string");
 		Token colonToken = GetToken(lexer);
-		if (colonToken.type != tok_colon) return Fail("expected colon");
+		if (colonToken.type != tok_colon) return FAIL("expected colon");
 
 		JNode* child = __parse(lexer, keyToken.str);
 		if (!child) return NULL;
@@ -44,7 +42,7 @@ JNode* __parseObject(Lexer* lexer, Token token, String key) {
 
 		Token commaToken = GetToken(lexer);
 		if (commaToken.type == tok_rcb) break;
-		if (commaToken.type != tok_comma) return Fail("expected comma");
+		if (commaToken.type != tok_comma) return FAIL("expected comma");
 	}
 
 	return object;
@@ -62,7 +60,7 @@ JNode* __parseArray(Lexer* lexer, Token token, String key) {
 
 		Token commaToken = GetToken(lexer);
 		if (commaToken.type == tok_rsb) break;
-		if (commaToken.type != tok_comma) return Fail("expected comma");
+		if (commaToken.type != tok_comma) return FAIL("expected comma");
 	}
 
 	return array;
@@ -83,5 +81,5 @@ JNode* __parse(Lexer* lexer, String key) {
 			return node;
 		}
 	}
-	return Fail("expected value token");
+	return FAIL("expected value token");
 }

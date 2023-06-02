@@ -1,32 +1,38 @@
-int32 utf8_decode(void* buf, int64 cap, uint32* codepoint) {
-    static const char lengths[] = { // number of bytes based on 
-        1, 1, 1, 1,                 // the 5 most significant bits
-        1, 1, 1, 1,                 // of the first byte.
-        1, 1, 1, 1, 
-        1, 1, 1, 1,
-        0, 0, 0, 0, 
-        0, 0, 0, 0, 
-        2, 2, 2, 2, 
-        3, 3, 
-        4, 
-        0
-    };
+int32 utf8_decode(byte* str, ssize cap, uint32* codepoint){
+	static byte length[] = {
+		1, 1, 1, 1, // 000xx
+		1, 1, 1, 1,
+		1, 1, 1, 1,
+		1, 1, 1, 1,
+		0, 0, 0, 0, // 100xx
+		0, 0, 0, 0,
+		2, 2, 2, 2, // 110xx
+		3, 3,       // 1110x
+		4,          // 11110
+		0,          // 11111
+	};
+	static byte first_byte_mask[] = { 0, 0x7F, 0x1F, 0x0F, 0x07 };
+	static byte final_shift[] = { 0, 18, 12, 6, 0 };
+	
+	if (cap <= 0) return 0;
 
-    static const uint32 masks[]  = {0x00, 0x7f, 0x1f, 0x0f, 0x07};
-    static const int32 shiftc[] = {0, 18, 12, 6, 0};
-
-    byte* str = (byte*)buf;
-    if (cap <= 0) return 0;
-    byte b = str[0];
-    int32 length = lengths[b >> 3];
-    if (0 < length && length <= cap) {
-        *codepoint = (b & masks[length]) << 18;
-        switch (length) {
-            case 3: *codepoint |= ((str[3] & 0x3f) << 0);
-            case 2: *codepoint |= ((str[2] & 0x3f) << 6);
-            case 1: *codepoint |= ((str[1] & 0x3f) << 12);
-            case 0: *codepoint >>= shiftc[length];
-        }
-    }
-    return length;
+	int32 size = 1;
+		
+	byte b = str[0];
+	byte l = length[b >> 3];
+	if (0 < l && l <= cap){
+		uint32 cp = (b & first_byte_mask[l]) << 18;
+		switch (l){
+			case 4: cp |= ((str[3] & 0x3F) << 0);
+			case 3: cp |= ((str[2] & 0x3F) << 6);
+			case 2: cp |= ((str[1] & 0x3F) << 12);
+			default: break;
+		}
+		cp >>= final_shift[l];
+		
+		*codepoint = cp;
+		size = l;
+	}
+		
+	return size;
 }

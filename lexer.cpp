@@ -91,9 +91,9 @@ Token GetToken(Lexer* lexer) {
         while (IsAlpha((c = GetCodepoint(lexer, &length))))
           token.str.length+=length;
     
-        if (StringEquals(token.str, "true") || StringEquals(token.str, "false"))
+        if (StringEquals(token.str, STR("true")) || StringEquals(token.str, STR("false")))
             token.type = tok_bool;
-        else if (StringEquals(token.str, "null"))
+        else if (StringEquals(token.str, STR("null")))
             token.type = tok_null;
         else token.type = tok_error;
 
